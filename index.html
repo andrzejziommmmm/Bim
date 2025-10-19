@@ -5,17 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BIO-OPTIMUS - Biogas AI Optimizer</title>
     <style>
-        /* Modernizacja CSS - Dark Mode, stylizacja paneli energetycznych */
+        /* CSS dla zaawansowanego panelu kontrolnego */
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
         
         :root {
-            --bg-dark: #1f2833; /* Głębokie, ciemne tło */
-            --bg-panel: #2c3a47; /* Tło sekcji/panelu */
-            --text-light: #c5c6c7; /* Jasny tekst */
-            --accent-green: #66ff99; /* Akcent biogaz/energia (neonowa zieleń) */
-            --warning-yellow: #ffc107; /* Ostrzeżenie */
-            --danger-red: #ff4d4d; /* Krytyczny błąd */
-            --font-display: 'Orbitron', sans-serif; /* Futurystyczny font dla tytułów */
+            --bg-dark: #121212; /* Ekstremalnie ciemne tło */
+            --bg-panel: #1e1e1e; /* Tło sekcji */
+            --text-light: #e0e0e0; /* Jasny tekst */
+            --accent-main: #00ffff; /* Turkus (Akcent Analityczny) */
+            --accent-secondary: #00cc66; /* Zielony (Akcent Energetyczny) */
+            --warning-yellow: #ffeb3b; /* Ostrzeżenie */
+            --danger-red: #ff3d00; /* Krytyczny błąd */
+            --font-display: 'Orbitron', sans-serif;
+            --font-mono: 'Roboto Mono', monospace;
         }
 
         body {
@@ -26,271 +28,302 @@
             line-height: 1.6;
         }
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 30px auto;
-            background: var(--bg-dark);
             padding: 20px;
+            border: 1px solid rgba(0, 255, 255, 0.1);
         }
         header {
             text-align: center;
             padding-bottom: 20px;
             margin-bottom: 30px;
-            border-bottom: 2px solid var(--accent-green);
+            border-bottom: 3px solid var(--accent-main);
         }
         h1 {
             font-family: var(--font-display);
-            color: var(--accent-green);
-            font-size: 2.5em;
+            color: var(--accent-main);
+            font-size: 3em;
             margin-bottom: 5px;
-            text-shadow: 0 0 5px rgba(102, 255, 153, 0.5); /* Efekt neonu */
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
         }
         h2 {
             font-family: var(--font-display);
-            color: var(--text-light);
+            color: var(--accent-secondary);
             font-weight: 400;
-            font-size: 1.4em;
+            font-size: 1.5em;
             margin-top: 0;
             margin-bottom: 15px;
-            border-left: 3px solid var(--accent-green);
+            border-left: 4px solid var(--accent-secondary);
             padding-left: 10px;
         }
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr; /* Większa kolumna na dane i mniejsza na logi */
+            gap: 20px;
+        }
         .section {
-            margin-bottom: 25px;
             padding: 20px;
             background-color: var(--bg-panel);
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(102, 255, 153, 0.2);
+            border-radius: 6px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
         }
 
-        /* Stylizacja Wskaźników KPI (Key Performance Indicators) */
+        /* Sekcja KPI / Wskaźników */
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 15px;
             margin-bottom: 20px;
         }
         .kpi-card {
-            background-color: #161e27;
-            padding: 15px;
-            border-radius: 6px;
-            border-bottom: 3px solid var(--accent-green);
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 4px;
+            border-bottom: 4px solid var(--accent-secondary);
+            text-align: center;
         }
         .kpi-value {
             font-family: var(--font-display);
-            font-size: 1.8em;
-            color: var(--accent-green);
+            font-size: 2.2em;
+            color: var(--accent-main);
         }
         .kpi-label {
             font-size: 0.9em;
             color: var(--text-light);
             opacity: 0.7;
         }
-        
-        /* Stylizacja przycisku */
-        button {
-            background-color: var(--accent-green);
+
+        /* Sekcja Optymalizacji i Przycisków */
+        .control-panel {
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+        .control-panel button {
+            background-color: var(--accent-secondary);
             color: var(--bg-dark);
             padding: 12px 25px;
             border: none;
-            border-radius: 6px;
+            border-radius: 4px;
             cursor: pointer;
             font-size: 1.1em;
             font-weight: 700;
-            transition: background-color 0.3s, transform 0.2s;
-        }
-        button:hover {
-            background-color: #33cc66;
-            transform: translateY(-1px);
-        }
-
-        /* Stylizacja logu/statusu */
-        #analysisStatus {
+            width: 100%;
             margin-top: 15px;
-            padding: 10px;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 1em;
-            letter-spacing: 1px;
+            transition: background-color 0.3s;
         }
-        .status-ready { background-color: #4CAF50; color: #fff; }
-        .status-processing { background-color: #3498db; color: #fff; }
-        .status-alert { background-color: var(--danger-red); color: #fff; }
-
-        /* Stylizacja Alarmów */
-        .alarm-list {
-            list-style: none;
-            padding: 0;
+        .control-panel button:hover {
+            background-color: #00ff80;
         }
-        .alarm-item {
-            padding: 12px;
-            margin-bottom: 8px;
-            border-radius: 4px;
-            border-left: 5px solid;
+        .input-group {
             display: flex;
-            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
         }
-        .alarm-item.warning {
-            background-color: rgba(255, 193, 7, 0.1);
-            border-color: var(--warning-yellow);
+        .input-group > div {
+            flex: 1;
         }
-        .alarm-item.critical {
-            background-color: rgba(255, 77, 77, 0.1);
-            border-color: var(--danger-red);
-        }
-        .alarm-item strong {
-            color: var(--accent-green);
-            margin-right: 10px;
-        }
-        .alarm-icon {
-            font-size: 1.5em;
-            margin-right: 10px;
-        }
-
-        /* Stylizacja Substratów (Inputs) */
-        .substrate-input label {
+        .input-group label {
             display: block;
-            margin-top: 10px;
-            color: var(--accent-green);
+            color: var(--accent-main);
+            margin-bottom: 5px;
         }
-        .substrate-input input {
-            width: 90%;
+        .input-group input {
+            width: 100%;
             padding: 8px;
-            margin-top: 5px;
-            background-color: #444;
+            background-color: #383838;
             border: 1px solid #555;
             color: var(--text-light);
             border-radius: 4px;
+            box-sizing: border-box;
+            font-family: var(--font-mono);
         }
+        
+        /* Sekcja Logów i Alarmów */
+        .log-console {
+            background-color: #0d0d0d;
+            border: 1px solid var(--accent-main);
+            padding: 15px;
+            height: 400px;
+            overflow-y: scroll;
+            font-family: var(--font-mono);
+            font-size: 0.9em;
+            border-radius: 4px;
+        }
+        .log-line {
+            padding: 2px 0;
+            border-bottom: 1px dotted #333;
+        }
+        .log-status { color: var(--accent-secondary); }
+        .log-warning { color: var(--warning-yellow); }
+        .log-error { color: var(--danger-red); font-weight: bold; }
+        .log-info { color: var(--accent-main); }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>BIO-OPTIMUS</h1>
-        <p style="color: var(--accent-green);">AI-Driven Biogas Yield Maximization System</p>
+        <h1>BIO-OPTIMUS <span style="font-size: 0.5em; opacity: 0.8;">v2.0</span></h1>
+        <p style="color: var(--accent-main); font-size: 1.1em;">AI Engine for Anaerobic Digestion Optimization</p>
     </header>
 
-    <div class="section">
-        <h2>📊 AKTUALNE PARAMETRY OPERACYJNE</h2>
-        <div class="kpi-grid">
-            <div class="kpi-card">
-                <div class="kpi-value" id="kpiMethane">88.5%</div>
-                <div class="kpi-label">Prognoza $\text{CH}_4$ (24h)</div>
+    <div class="grid-layout">
+        <div class="main-content">
+            <div class="section">
+                <h2>📈 AKTUALNE WSKAŹNIKI EFEKTYWNOŚCI</h2>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-value" id="kpiMethane">88.5<small>%</small></div>
+                        <div class="kpi-label">PROGNOZA $\text{CH}_4$ (24H)</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-value" id="kpiVFA">0.45</div>
+                        <div class="kpi-label">LKT/TA (VFA/ALK)</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-value" id="kpiTemp">40.1<small>°C</small></div>
+                        <div class="kpi-label">TEMP. FERMENTACJI</div>
+                    </div>
+                </div>
             </div>
-            <div class="kpi-card">
-                <div class="kpi-value" id="kpiPH">7.32</div>
-                <div class="kpi-label">Aktualne pH Fermentora</div>
+
+            <div class="section control-panel">
+                <h2>🛠️ MODUŁ WEJŚCIA I KONTROLI AI</h2>
+                <div class="input-group">
+                    <div>
+                        <label for="cornSilage">DAWKA KISZONKI [t/dzień]</label>
+                        <input type="number" id="cornSilage" value="15.0" step="0.1">
+                    </div>
+                    <div>
+                        <label for="manureSlurry">DAWKA GNOJOWICY [m³/dzień]</label>
+                        <input type="number" id="manureSlurry" value="50.0" step="1.0">
+                    </div>
+                </div>
+
+                <button onclick="startAIOptimization()">
+                    <span id="buttonIcon">▶️</span> URUCHOM PREDYKCYJNĄ ANALIZĘ (LSTM & REGRESSOR)
+                </button>
             </div>
-            <div class="kpi-card">
-                <div class="kpi-value" id="kpiVFA">0.45</div>
-                <div class="kpi-label">LKT/TA (VFA/Alkalinity)</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-value" id="kpiTemp">40.1 °C</div>
-                <div class="kpi-label">Temperatura Fermentacji</div>
+
+            <div class="section">
+                <h2>✅ REKOMENDACJE AI (Ostateczne)</h2>
+                <div class="log-console" id="recommendationOutput" style="height: 150px;">
+                    <span class="log-line log-status">> SYSTEM STATUS: READY. Waiting for input...</span>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="section">
-        <h2>🧠 MODUŁ OPTYMALIZACJI AI</h2>
-        
-        <div class="substrate-input">
-            <label>Aktualna Dawka Kiszonki Kukurydzianej ($\text{t}/\text{dzień}$):</label>
-            <input type="number" id="cornSilage" value="15" step="0.1">
-            <label>Aktualna Dawka Gnojowicy ($\text{m}^3/\text{dzień}$):</label>
-            <input type="number" id="manureSlurry" value="50" step="1">
+        <div class="log-area">
+            <div class="section">
+                <h2>📝 LOG KONSOLE ANALIZY RYZYKA</h2>
+                <div class="log-console" id="analysisLog">
+                    <span class="log-line log-info">> BIO-OPTIMUS v2.0 AI online.</span>
+                    <span class="log-line log-info">> Initializing LSTM for stability prediction... [OK]</span>
+                    <span class="log-line log-info">> Initializing Anomaly Detector for equipment... [OK]</span>
+                </div>
+            </div>
         </div>
-
-        <button onclick="startAIOptimization()" style="margin-top: 20px;">
-            <span id="buttonIcon">EXECUTE AI</span> Uruchom Optymalizację Wsadu i Procesu
-        </button>
-        <div id="analysisStatus" class="status-ready" style="margin-top: 20px;">
-            System gotowy. Wprowadź dane i uruchom symulację.
-        </div>
-    </div>
-
-    <div class="section">
-        <h2>🚨 ZALECENIA AI I ALERTY RYZYKA</h2>
-        <ul class="alarm-list" id="recommendationList">
-            <li class="alarm-item warning"><span class="alarm-icon">🟢</span> Brak aktywnych alertów krytycznych.</li>
-        </ul>
     </div>
 </div>
 
 <script>
+    function logToConsole(message, type = 'info') {
+        const consoleElement = document.getElementById('analysisLog');
+        const now = new Date();
+        const time = now.toLocaleTimeString();
+        const logLine = document.createElement('span');
+        logLine.className = `log-line log-${type}`;
+        logLine.innerHTML = `[${time}] > ${message}`;
+        consoleElement.appendChild(logLine);
+        consoleElement.scrollTop = consoleElement.scrollHeight; // Scroll na dół
+    }
+
+    function outputRecommendation(message, type = 'status') {
+        const outputElement = document.getElementById('recommendationOutput');
+        const logLine = document.createElement('span');
+        logLine.className = `log-line log-${type}`;
+        logLine.innerHTML = `> ${message}`;
+        outputElement.appendChild(logLine);
+        outputElement.scrollTop = outputElement.scrollHeight;
+    }
+
     function startAIOptimization() {
-        const statusElement = document.getElementById('analysisStatus');
-        const recommendationList = document.getElementById('recommendationList');
+        const button = document.querySelector('button');
         const buttonIcon = document.getElementById('buttonIcon');
-        
-        // Dane wejściowe z pól
         const silageDose = parseFloat(document.getElementById('cornSilage').value);
         const slurryDose = parseFloat(document.getElementById('manureSlurry').value);
 
-        if (isNaN(silageDose) || isNaN(slurryDose)) {
-            statusElement.className = 'status-alert';
-            statusElement.innerHTML = '[ERROR] Proszę wprowadzić poprawne wartości liczbowe.';
+        // Walidacja
+        if (isNaN(silageDose) || isNaN(slurryDose) || silageDose <= 0 || slurryDose <= 0) {
+            logToConsole('ERROR: Invalid input data. Check dose values.', 'error');
             return;
         }
 
-        // 1. Symulacja procesu analizy
-        statusElement.className = 'status-processing';
-        statusElement.innerHTML = `[PROCESSING] Analiza $${silageDose}\, \text{t}$ Kiszonki i $${slurryDose}\, \text{m}^3$ Gnojowicy. Predykcja 48h...`;
-        buttonIcon.innerText = 'WAIT';
-        recommendationList.innerHTML = '';
+        // --- 1. Faza: Uruchomienie ---
+        button.disabled = true;
+        buttonIcon.innerText = '⏳';
+        document.getElementById('recommendationOutput').innerHTML = '';
+        logToConsole('AI PROCESSING: Starting new optimization cycle...', 'info');
 
-        // 2. Symulacja generowania wyników i alertów
+        // Symulacja logów konsoli
+        setTimeout(() => logToConsole(`LSTM: Reading current parameters (pH: ${document.getElementById('kpiPH').innerText}, VFA: ${document.getElementById('kpiVFA').innerText})...`, 'info'), 500);
+        setTimeout(() => logToConsole(`REGRESSOR: Analyzing cost-to-efficiency ratio for ${silageDose}t and ${slurryDose}m³...`, 'info'), 1000);
+
+        // --- 2. Faza: Predykcja i generowanie wyników (3 sekundy) ---
         setTimeout(() => {
-            const methaneForecast = (88 + (Math.random() * 2 - 1)).toFixed(1); // Symulacja lekkiej zmiany
-            document.getElementById('kpiMethane').innerText = methaneForecast + '%';
-
-            const recommendations = [];
-            
-            // Logika AI - Predykcja Stabilności
+            // Logika AI - Predykcja Stabilności (LSTM - Symulacja ryzyka)
             const vfaRatio = parseFloat(document.getElementById('kpiVFA').innerText);
+            let riskLevel = 'status';
+            let riskMessage = 'LSTM: Stability forecast: OK. 0% risk of biological inhibition (48h).';
+
             if (vfaRatio > 0.48) {
-                recommendations.push({ 
-                    type: 'KRYTYCZNY BIOLOGICZNY', 
-                    desc: 'Wykryto ryzyko kwasowego załamania (< 24h). Natychmiast zmniejsz dawkę substratów i dodaj $300\,\text{kg}$ $\text{NaOH}$!', 
-                    severity: 'critical', 
-                    icon: '🚨' 
-                });
+                riskLevel = 'error';
+                riskMessage = 'LSTM CRITICAL ALERT! ⚠️ High risk of acidification (65% chance in 24h).';
+                outputRecommendation(`KRYTYCZNE: Natychmiast zmniejsz wsad o 30% i dodaj 500kg regulatora pH.`, 'error');
             } else if (vfaRatio > 0.40) {
-                 recommendations.push({ 
-                    type: 'OSTRZEŻENIE BIOLOGICZNE', 
-                    desc: 'Wskaźnik LKT/TA wzrasta. Zmniejsz dawkę substratów o $5\%$ na 12 godzin i monitoruj pH.', 
-                    severity: 'warning', 
-                    icon: '🟡' 
-                });
+                riskLevel = 'warning';
+                riskMessage = 'LSTM WARNING: VFA trend is increasing. Monitor closely (Risk 15% in 48h).';
+                outputRecommendation(`OSTRZEŻENIE: Zmniejsz dawkę kiszonki kukurydzianej o 5% i monitoruj LKT/TA.`, 'warning');
+            }
+            logToConsole(riskMessage, riskLevel);
+
+            // Logika AI - Optymalizacja Wsadu (Regressor)
+            const methaneImprovement = (Math.random() * 1.5).toFixed(1); // Wzrost CH4
+            const optimalSilage = (silageDose * 0.98).toFixed(1);
+            const optimalSlurry = (slurryDose * 1.02).toFixed(1);
+            
+            logToConsole(`REGRESSOR: Recommending new feed mix for +${methaneImprovement}% CH4...`, 'info');
+            outputRecommendation(`OPTYMALIZACJA WSADU: Zalecana dawka: Kiszonka ${optimalSilage}t/dzień, Gnojowica ${optimalSlurry}m³/dzień. Oczekiwany wzrost: +${methaneImprovement}% metanu.`, 'log-status');
+            
+            // Logika AI - Predykcyjne Utrzymanie Ruchu (Anomaly Detector)
+            logToConsole('ANOMALY DETECTOR: Scanning equipment status...', 'info');
+            if (Math.random() > 0.7) { // 30% szans na alert
+                logToConsole('ANOMALY ALERT: Mieszadło F-01 - wykryto nienormalne drgania (odchylenie +20%).', 'warning');
+                outputRecommendation(`UTRZYMANIE RUCHU: Mieszadło F-01 wymaga kontroli technicznej łożysk w ciągu 7 dni. Zredukuj moc o 10%.`, 'warning');
+            } else {
+                logToConsole('ANOMALY DETECTOR: All equipment running within baseline parameters.', 'log-status');
             }
 
-            // Logika AI - Optymalizacja Wsadu (Symulacja Proporcji)
-            const optimalSilage = silageDose * 0.95; // Sugestia zmniejszenia o 5%
-            const optimalSlurry = slurryDose * 1.05; // Sugestia zwiększenia o 5%
+            // Aktualizacja głównego KPI
+            const newMethane = (parseFloat(document.getElementById('kpiMethane').innerText) + parseFloat(methaneImprovement) / 2).toFixed(1);
+            document.getElementById('kpiMethane').innerText = newMethane + '%';
+            
+            // --- 3. Faza: Zakończenie ---
+            logToConsole('AI PROCESSING: Cycle complete. Results posted to Recommendation Panel.', 'log-status');
+            button.disabled = false;
+            buttonIcon.innerText = '✅';
+        }, 3000);
+    }
 
-            if (silageDose > 14) {
-                 recommendations.push({ 
-                    type: 'OPTYMALIZACJA WSADU', 
-                    desc: `Zalecana modyfikacja dawki: Kiszonka $${optimalSilage.toFixed(1)}\,\text{t}/\text{dzień}$, Gnojowica $${optimalSlurry.toFixed(1)}\,\text{m}^3/\text{dzień}$. Oczekiwany wzrost $\text{CH}_4$ o $0.8\%$.`, 
-                    severity: 'warning', 
-                    icon: '♻️' 
-                });
-            }
+    // Ustawienie początkowego statusu VFA/pH (Symulacja danych z czujników)
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('kpiPH').innerText = (7.5 - Math.random() * 0.5).toFixed(2);
+        document.getElementById('kpiVFA').innerText = (0.35 + Math.random() * 0.15).toFixed(2);
+    });
 
-            // Logika AI - Predykcyjne Utrzymanie Ruchu (Stały alert)
-            recommendations.push({ 
-                type: 'UTRZYMANIE RUCHU', 
-                desc: 'Predykcja awarii: Mieszadło F-01 wykazuje anomalię drgań. Sprawdź łożysko w ciągu 10 dni.', 
-                severity: 'warning', 
-                icon: '🛠️' 
-            });
+</script>
 
-            if (recommendations.length === 0) {
-                 recommendations.push({ 
-                    type: 'OK', 
-                    desc: 'System stabilny. Procesy biologiczne i techniczne w normie.', 
-                    severity: 'warning', 
-                    icon: '
+</body>
+</html>
