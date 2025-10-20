@@ -1,329 +1,343 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BIO-OPTIMUS - Biogas AI Optimizer</title>
-    <style>
-        /* CSS dla zaawansowanego panelu kontrolnego */
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
-        
-        :root {
-            --bg-dark: #121212; /* Ekstremalnie ciemne tło */
-            --bg-panel: #1e1e1e; /* Tło sekcji */
-            --text-light: #e0e0e0; /* Jasny tekst */
-            --accent-main: #00ffff; /* Turkus (Akcent Analityczny) */
-            --accent-secondary: #00cc66; /* Zielony (Akcent Energetyczny) */
-            --warning-yellow: #ffeb3b; /* Ostrzeżenie */
-            --danger-red: #ff3d00; /* Krytyczny błąd */
-            --font-display: 'Orbitron', sans-serif;
-            --font-mono: 'Roboto Mono', monospace;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Biogaz AI — Optymalizacja substratu</title>
+  <meta name="description" content="Prosty, responsywny prototyp aplikacji AI dla biogazowni — optymalizacja składu substratu i symulacja produkcji metanu." />
 
-        body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            background: var(--bg-dark);
-            color: var(--text-light);
-            line-height: 1.6;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 30px auto;
-            padding: 20px;
-            border: 1px solid rgba(0, 255, 255, 0.1);
-        }
-        header {
-            text-align: center;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-            border-bottom: 3px solid var(--accent-main);
-        }
-        h1 {
-            font-family: var(--font-display);
-            color: var(--accent-main);
-            font-size: 3em;
-            margin-bottom: 5px;
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-        }
-        h2 {
-            font-family: var(--font-display);
-            color: var(--accent-secondary);
-            font-weight: 400;
-            font-size: 1.5em;
-            margin-top: 0;
-            margin-bottom: 15px;
-            border-left: 4px solid var(--accent-secondary);
-            padding-left: 10px;
-        }
-        .grid-layout {
-            display: grid;
-            grid-template-columns: 2fr 1fr; /* Większa kolumna na dane i mniejsza na logi */
-            gap: 20px;
-        }
-        .section {
-            padding: 20px;
-            background-color: var(--bg-panel);
-            border-radius: 6px;
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
-        }
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-        /* Sekcja KPI / Wskaźników */
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .kpi-card {
-            background-color: #2a2a2a;
-            padding: 20px;
-            border-radius: 4px;
-            border-bottom: 4px solid var(--accent-secondary);
-            text-align: center;
-        }
-        .kpi-value {
-            font-family: var(--font-display);
-            font-size: 2.2em;
-            color: var(--accent-main);
-        }
-        .kpi-label {
-            font-size: 0.9em;
-            color: var(--text-light);
-            opacity: 0.7;
-        }
+  <!-- Modern, self-contained styles -->
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1220; --glass: rgba(255,255,255,0.04);
+      --accent: linear-gradient(135deg,#06b6d4 0%, #7c3aed 100%);
+      --muted: #9aa4b2; --glass-2: rgba(255,255,255,0.02);
+      --radius: 14px;
+      --glass-border: rgba(255,255,255,0.06);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background: radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.12), transparent 6%),
+      radial-gradient(900px 400px at 90% 90%, rgba(6,182,212,0.08), transparent 6%), var(--bg);
+      color:#e6eef6; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+      padding:28px; display:flex; align-items:flex-start; justify-content:center;
+    }
 
-        /* Sekcja Optymalizacji i Przycisków */
-        .control-panel {
-            background-color: #2a2a2a;
-            padding: 20px;
-            border-radius: 6px;
-            margin-top: 20px;
-        }
-        .control-panel button {
-            background-color: var(--accent-secondary);
-            color: var(--bg-dark);
-            padding: 12px 25px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1.1em;
-            font-weight: 700;
-            width: 100%;
-            margin-top: 15px;
-            transition: background-color 0.3s;
-        }
-        .control-panel button:hover {
-            background-color: #00ff80;
-        }
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .input-group > div {
-            flex: 1;
-        }
-        .input-group label {
-            display: block;
-            color: var(--accent-main);
-            margin-bottom: 5px;
-        }
-        .input-group input {
-            width: 100%;
-            padding: 8px;
-            background-color: #383838;
-            border: 1px solid #555;
-            color: var(--text-light);
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-family: var(--font-mono);
-        }
-        
-        /* Sekcja Logów i Alarmów */
-        .log-console {
-            background-color: #0d0d0d;
-            border: 1px solid var(--accent-main);
-            padding: 15px;
-            height: 400px;
-            overflow-y: scroll;
-            font-family: var(--font-mono);
-            font-size: 0.9em;
-            border-radius: 4px;
-        }
-        .log-line {
-            padding: 2px 0;
-            border-bottom: 1px dotted #333;
-        }
-        .log-status { color: var(--accent-secondary); }
-        .log-warning { color: var(--warning-yellow); }
-        .log-error { color: var(--danger-red); font-weight: bold; }
-        .log-info { color: var(--accent-main); }
-    </style>
+    /* container */
+    .wrap{width:1200px; max-width:100%; display:grid; gap:20px; grid-template-columns: 420px 1fr; align-items:start}
+
+    header{grid-column:1/-1; display:flex; gap:16px; align-items:center}
+    .logo{display:flex;align-items:center;gap:12px}
+    .logo .icon{width:48px;height:48px;border-radius:12px;background:var(--glass);display:grid;place-items:center;border:1px solid var(--glass-border);}
+    h1{font-size:18px;margin:0}
+    p.lead{margin:0;color:var(--muted)}
+
+    /* sidebar / controls */
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid var(--glass-border); padding:18px;border-radius:var(--radius);box-shadow: 0 6px 24px rgba(2,6,23,0.6)}
+
+    form .row{display:flex;gap:10px;margin-bottom:10px}
+    label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
+    input[type=number], select{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    .small{width:80px}
+
+    .controls-footer{display:flex;gap:10px;align-items:center;margin-top:14px}
+    button.primary{background:var(--accent);border:0;padding:12px 18px;border-radius:10px;color:#fff;font-weight:600;cursor:pointer}
+    button.ghost{background:transparent;border:1px solid var(--glass-border);padding:10px 14px;border-radius:10px;color:var(--muted);cursor:pointer}
+
+    /* main panel */
+    .main{display:flex;flex-direction:column;gap:18px}
+    .grid{display:grid;grid-template-columns:1fr 380px;gap:18px}
+    .metric{display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));border:1px solid var(--glass-border)}
+    .metric h3{margin:0;font-size:14px}
+    .metric .val{font-size:20px;font-weight:700}
+
+    canvas{background:transparent;border-radius:12px}
+
+    /* responsive */
+    @media (max-width:1024px){
+      .wrap{grid-template-columns:1fr}
+      .grid{grid-template-columns:1fr}
+    }
+    @media (max-width:600px){
+      body{padding:14px}
+      .logo .text{display:none}
+      .card{padding:12px}
+      input[type=number]{padding:8px}
+      button.primary{padding:10px}
+    }
+
+    /* micro interactions */
+    .fade-in{animation:fade .7s ease both}
+    @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+    .hint{font-size:12px;color:var(--muted);margin-top:8px}
+
+    footer{grid-column:1/-1;color:var(--muted);font-size:13px;margin-top:6px}
+  </style>
 </head>
 <body>
-
-<div class="container">
+  <div class="wrap">
     <header>
-        <h1>BIO-OPTIMUS <span style="font-size: 0.5em; opacity: 0.8;">v2.0</span></h1>
-        <p style="color: var(--accent-main); font-size: 1.1em;">AI Engine for Anaerobic Digestion Optimization</p>
+      <div class="logo">
+        <div class="icon" aria-hidden>
+          <!-- simple biogas icon -->
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C10.34 5.5 7 7 7 10.5C7 13.5 9.5 16 12 16C14.5 16 17 13.5 17 10.5C17 7 13.66 5.5 12 2Z" stroke="#fff" stroke-opacity="0.9" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 20C4 16 8 13 12 13C16 13 20 16 20 20" stroke="#fff" stroke-opacity="0.6" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="text">
+          <h1>Biogaz AI</h1>
+          <p class="lead">Symulacja i optymalizacja substratu — prototyp 2025</p>
+        </div>
+      </div>
     </header>
 
-    <div class="grid-layout">
-        <div class="main-content">
-            <div class="section">
-                <h2>📈 AKTUALNE WSKAŹNIKI EFEKTYWNOŚCI</h2>
-                <div class="kpi-grid">
-                    <div class="kpi-card">
-                        <div class="kpi-value" id="kpiMethane">88.5<small>%</small></div>
-                        <div class="kpi-label">PROGNOZA $\text{CH}_4$ (24H)</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-value" id="kpiVFA">0.45</div>
-                        <div class="kpi-label">LKT/TA (VFA/ALK)</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-value" id="kpiTemp">40.1<small>°C</small></div>
-                        <div class="kpi-label">TEMP. FERMENTACJI</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section control-panel">
-                <h2>🛠️ MODUŁ WEJŚCIA I KONTROLI AI</h2>
-                <div class="input-group">
-                    <div>
-                        <label for="cornSilage">DAWKA KISZONKI [t/dzień]</label>
-                        <input type="number" id="cornSilage" value="15.0" step="0.1">
-                    </div>
-                    <div>
-                        <label for="manureSlurry">DAWKA GNOJOWICY [m³/dzień]</label>
-                        <input type="number" id="manureSlurry" value="50.0" step="1.0">
-                    </div>
-                </div>
-
-                <button onclick="startAIOptimization()">
-                    <span id="buttonIcon">▶️</span> URUCHOM PREDYKCYJNĄ ANALIZĘ (LSTM & REGRESSOR)
-                </button>
-            </div>
-
-            <div class="section">
-                <h2>✅ REKOMENDACJE AI (Ostateczne)</h2>
-                <div class="log-console" id="recommendationOutput" style="height: 150px;">
-                    <span class="log-line log-status">> SYSTEM STATUS: READY. Waiting for input...</span>
-                </div>
-            </div>
+    <!-- SIDEBAR: Inputs -->
+    <aside class="card fade-in">
+      <h2 style="margin-top:0">Parametry substratu</h2>
+      <form id="inputForm" autocomplete="off">
+        <div class="row">
+          <div style="flex:1">
+            <label for="type">Rodzaj</label>
+            <select id="type">
+              <option>Kiszonka kukurydzy</option>
+              <option>Obornik świński</option>
+              <option>Odpady spożywcze</option>
+              <option>Mieszanka</option>
+            </select>
+          </div>
+          <div>
+            <label for="share">Udział %</label>
+            <input id="share" type="number" value="50" min="0" max="100" class="small" />
+          </div>
         </div>
 
-        <div class="log-area">
-            <div class="section">
-                <h2>📝 LOG KONSOLE ANALIZY RYZYKA</h2>
-                <div class="log-console" id="analysisLog">
-                    <span class="log-line log-info">> BIO-OPTIMUS v2.0 AI online.</span>
-                    <span class="log-line log-info">> Initializing LSTM for stability prediction... [OK]</span>
-                    <span class="log-line log-info">> Initializing Anomaly Detector for equipment... [OK]</span>
-                </div>
-            </div>
+        <label for="sm">Sucha masa (SM %)</label>
+        <input id="sm" type="number" value="25" step="0.1" />
+
+        <label for="vs">Lotne substancje stałe (VS % of TS)</label>
+        <input id="vs" type="number" value="88" step="0.1" />
+
+        <div class="row">
+          <div style="flex:1">
+            <label for="cn">Stosunek C/N</label>
+            <input id="cn" type="number" value="24" step="0.1" />
+          </div>
+          <div style="flex:1">
+            <label for="ph">pH</label>
+            <input id="ph" type="number" value="7.0" step="0.05" />
+          </div>
         </div>
-    </div>
-</div>
 
-<script>
-    function logToConsole(message, type = 'info') {
-        const consoleElement = document.getElementById('analysisLog');
-        const now = new Date();
-        const time = now.toLocaleTimeString();
-        const logLine = document.createElement('span');
-        logLine.className = `log-line log-${type}`;
-        logLine.innerHTML = `[${time}] > ${message}`;
-        consoleElement.appendChild(logLine);
-        consoleElement.scrollTop = consoleElement.scrollHeight; // Scroll na dół
-    }
+        <label for="temp">Temperatura (°C)</label>
+        <input id="temp" type="number" value="38" step="0.1" />
 
-    function outputRecommendation(message, type = 'status') {
-        const outputElement = document.getElementById('recommendationOutput');
-        const logLine = document.createElement('span');
-        logLine.className = `log-line log-${type}`;
-        logLine.innerHTML = `> ${message}`;
-        outputElement.appendChild(logLine);
-        outputElement.scrollTop = outputElement.scrollHeight;
-    }
+        <label for="olr">OLR (kg VS/m³·d)</label>
+        <input id="olr" type="number" value="2.3" step="0.01" />
 
-    function startAIOptimization() {
-        const button = document.querySelector('button');
-        const buttonIcon = document.getElementById('buttonIcon');
-        const silageDose = parseFloat(document.getElementById('cornSilage').value);
-        const slurryDose = parseFloat(document.getElementById('manureSlurry').value);
+        <div class="controls-footer">
+          <button type="button" class="primary" id="runBtn">Optymalizuj</button>
+          <button type="button" class="ghost" id="resetBtn">Reset</button>
+        </div>
+        <p class="hint">To jest prototyp frontendu — model AI symulowany po stronie klienta. Do produkcyjnej wersji podłącz model ML po stronie serwera.</p>
+      </form>
 
-        // Walidacja
-        if (isNaN(silageDose) || isNaN(slurryDose) || silageDose <= 0 || slurryDose <= 0) {
-            logToConsole('ERROR: Invalid input data. Check dose values.', 'error');
-            return;
-        }
+      <hr style="border:none;border-top:1px solid var(--glass-border);margin:12px 0"/>
+      <div>
+        <h3 style="margin:0 0 8px 0">Eksport</h3>
+        <button class="ghost" id="exportCsv">Eksportuj CSV</button>
+      </div>
+    </aside>
 
-        // --- 1. Faza: Uruchomienie ---
-        button.disabled = true;
-        buttonIcon.innerText = '⏳';
-        document.getElementById('recommendationOutput').innerHTML = '';
-        logToConsole('AI PROCESSING: Starting new optimization cycle...', 'info');
+    <!-- MAIN CONTENT -->
+    <main class="main">
+      <div class="grid">
+        <div class="card fade-in">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div>
+              <h2 style="margin:0">Wynik symulacji</h2>
+              <p class="lead" style="margin:0">Szacowana produkcja metanu i rekomendacje optymalizacyjne</p>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:12px;color:var(--muted)">Data</div>
+              <div id="now" style="font-weight:700">--</div>
+            </div>
+          </div>
 
-        // Symulacja logów konsoli
-        setTimeout(() => logToConsole(`LSTM: Reading current parameters (pH: ${document.getElementById('kpiPH').innerText}, VFA: ${document.getElementById('kpiVFA').innerText})...`, 'info'), 500);
-        setTimeout(() => logToConsole(`REGRESSOR: Analyzing cost-to-efficiency ratio for ${silageDose}t and ${slurryDose}m³...`, 'info'), 1000);
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+            <div class="metric"><div><h3>Metan (CH₄)</h3><div class="muted">zawartość</div></div><div class="val" id="methaneVal">- %</div></div>
+            <div class="metric"><div><h3>Biogaz</h3><div class="muted">m³/d</div></div><div class="val" id="biogasVal">-</div></div>
+            <div class="metric"><div><h3>Wydajność</h3><div class="muted">m³ CH₄ / kg VS</div></div><div class="val" id="effVal">-</div></div>
+          </div>
 
-        // --- 2. Faza: Predykcja i generowanie wyników (3 sekundy) ---
-        setTimeout(() => {
-            // Logika AI - Predykcja Stabilności (LSTM - Symulacja ryzyka)
-            const vfaRatio = parseFloat(document.getElementById('kpiVFA').innerText);
-            let riskLevel = 'status';
-            let riskMessage = 'LSTM: Stability forecast: OK. 0% risk of biological inhibition (48h).';
+          <canvas id="trendChart" height="160"></canvas>
+        </div>
 
-            if (vfaRatio > 0.48) {
-                riskLevel = 'error';
-                riskMessage = 'LSTM CRITICAL ALERT! ⚠️ High risk of acidification (65% chance in 24h).';
-                outputRecommendation(`KRYTYCZNE: Natychmiast zmniejsz wsad o 30% i dodaj 500kg regulatora pH.`, 'error');
-            } else if (vfaRatio > 0.40) {
-                riskLevel = 'warning';
-                riskMessage = 'LSTM WARNING: VFA trend is increasing. Monitor closely (Risk 15% in 48h).';
-                outputRecommendation(`OSTRZEŻENIE: Zmniejsz dawkę kiszonki kukurydzianej o 5% i monitoruj LKT/TA.`, 'warning');
-            }
-            logToConsole(riskMessage, riskLevel);
+        <div class="card fade-in">
+          <h3 style="margin-top:0">Rekomendacje</h3>
+          <div id="recommendations">
+            <p class="hint">Naciśnij <strong>Optymalizuj</strong>, aby zobaczyć sugestie mieszanki.</p>
+          </div>
+        </div>
+      </div>
 
-            // Logika AI - Optymalizacja Wsadu (Regressor)
-            const methaneImprovement = (Math.random() * 1.5).toFixed(1); // Wzrost CH4
-            const optimalSilage = (silageDose * 0.98).toFixed(1);
-            const optimalSlurry = (slurryDose * 1.02).toFixed(1);
-            
-            logToConsole(`REGRESSOR: Recommending new feed mix for +${methaneImprovement}% CH4...`, 'info');
-            outputRecommendation(`OPTYMALIZACJA WSADU: Zalecana dawka: Kiszonka ${optimalSilage}t/dzień, Gnojowica ${optimalSlurry}m³/dzień. Oczekiwany wzrost: +${methaneImprovement}% metanu.`, 'log-status');
-            
-            // Logika AI - Predykcyjne Utrzymanie Ruchu (Anomaly Detector)
-            logToConsole('ANOMALY DETECTOR: Scanning equipment status...', 'info');
-            if (Math.random() > 0.7) { // 30% szans na alert
-                logToConsole('ANOMALY ALERT: Mieszadło F-01 - wykryto nienormalne drgania (odchylenie +20%).', 'warning');
-                outputRecommendation(`UTRZYMANIE RUCHU: Mieszadło F-01 wymaga kontroli technicznej łożysk w ciągu 7 dni. Zredukuj moc o 10%.`, 'warning');
-            } else {
-                logToConsole('ANOMALY DETECTOR: All equipment running within baseline parameters.', 'log-status');
-            }
+      <div class="card fade-in">
+        <h3 style="margin-top:0">Historia symulacji</h3>
+        <div id="history" style="display:flex;flex-direction:column;gap:8px;max-height:160px;overflow:auto;padding-top:6px"></div>
+      </div>
 
-            // Aktualizacja głównego KPI
-            const newMethane = (parseFloat(document.getElementById('kpiMethane').innerText) + parseFloat(methaneImprovement) / 2).toFixed(1);
-            document.getElementById('kpiMethane').innerText = newMethane + '%';
-            
-            // --- 3. Faza: Zakończenie ---
-            logToConsole('AI PROCESSING: Cycle complete. Results posted to Recommendation Panel.', 'log-status');
-            button.disabled = false;
-            buttonIcon.innerText = '✅';
-        }, 3000);
-    }
+      <footer>
+        Prototyp interfejsu — gotowy do umieszczenia jako **index.html** w repozytorium GitHub Pages. <strong>Nie</strong> zawiera prawdziwego modelu ML (użyj serwera do trenowania i wywoływania modelu).
+      </footer>
+    </main>
 
-    // Ustawienie początkowego statusu VFA/pH (Symulacja danych z czujników)
-    document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('kpiPH').innerText = (7.5 - Math.random() * 0.5).toFixed(2);
-        document.getElementById('kpiVFA').innerText = (0.35 + Math.random() * 0.15).toFixed(2);
+  </div>
+
+  <!-- JavaScript: symulacja modelu i interakcje -->
+  <script>
+    // Utility: format date
+    function nowText(){return new Date().toLocaleString('pl-PL', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}
+    document.getElementById('now').innerText = nowText();
+
+    const historyEl = document.getElementById('history');
+    const recEl = document.getElementById('recommendations');
+
+    // Chart setup
+    const ctx = document.getElementById('trendChart').getContext('2d');
+    const trendChart = new Chart(ctx, {
+      type:'line', data:{labels:[],datasets:[{label:'CH₄ %',data:[],tension:0.3,fill:false,pointRadius:4} ,{label:'Biogaz m³/d',data:[],tension:0.3,fill:false,pointRadius:2}]}, options:{plugins:{legend:{labels:{color:'#cfe9ff'}}},scales:{x:{grid:{display:false},ticks:{color:'#9fb7d0'}},y:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'#9fb7d0'}}}}
     });
 
-</script>
+    // Simple client-side 'model' to simulate prediction
+    function simplePredict(inputs){
+      // inputs: {sm,vs,cn,ph,temp,olr,share,type}
+      // This is a heuristic simulation, NOT an ML model.
 
+      // base CH4 potential depends on substrate type
+      const baseMap = {"Kiszonka kukurydzy":0.55, "Obornik świński":0.6, "Odpady spożywcze":0.65, "Mieszanka":0.58};
+      const base = baseMap[inputs.type] || 0.55;
+
+      // adjust by VS and SM
+      const vsFactor = Math.min(1.25, inputs.vs/80 * 1.0);
+      const moistureFactor = 1 - Math.abs(inputs.sm - 25)/60; // best near 25%
+
+      // C/N ideal near 25
+      const cnFactor = 1 - Math.min(0.4, Math.abs(inputs.cn - 25)/50);
+
+      // pH optimal 6.8-7.5
+      const phFactor = 1 - Math.min(0.5, Math.abs(inputs.ph - 7.1)/2);
+
+      // temperature factor (mezofilny 37-40 ideal)
+      const tempFactor = 1 - Math.min(0.5, Math.abs(inputs.temp - 38)/30);
+
+      // OLR too high reduces yield
+      const olrFactor = 1 - Math.max(0, (inputs.olr - 3)/6);
+
+      const methaneFraction = Math.max(0.40, base * vsFactor * moistureFactor * cnFactor * phFactor * tempFactor * olrFactor);
+
+      // biogas production — rough: proportional to VS, share and an arbitrary coef
+      const biogas = Math.max(100, (inputs.vs * inputs.share/100) * (inputs.sm/100) * 1000 * olrFactor);
+
+      const ch4_m3_per_kgVS = methaneFraction * 0.8; // synthetic
+
+      return {
+        methanePercent: +(methaneFraction*100).toFixed(1),
+        biogasM3: Math.round(biogas),
+        eff: +(ch4_m3_per_kgVS.toFixed(3))
+      }
+    }
+
+    function addHistory(entry){
+      const el = document.createElement('div');
+      el.style.padding='8px'; el.style.borderRadius='8px'; el.style.background='var(--glass-2)'; el.style.border='1px solid var(--glass-border)';
+      el.innerHTML = `<strong>${entry.type} (${entry.share}%)</strong> — CH₄: ${entry.methanePercent}% • Biogaz: ${entry.biogasM3} m³/d • Wydajność: ${entry.eff} m³/kgVS <div style="font-size:12px;color:var(--muted)">${entry.time}</div>`;
+      historyEl.prepend(el);
+    }
+
+    function showRecommendations(inputs, result){
+      recEl.innerHTML = '';
+      const ul = document.createElement('div');
+      ul.innerHTML = `
+        <p style="margin:6px 0">Zalecenia optymalizacyjne (heurystyka):</p>
+        <ul style="margin:0 0 8px 18px">
+          <li>Utrzymuj pH w zakresie 6.8–7.5 dla stabilnej produkcji.</li>
+          <li>Zmieniaj stosunek C/N w kierunku 25 — rozważ dodanie substratu wysokowęglowego, jeśli &lt;20.</li>
+          <li>Optymalna sucha masa ~20–30% — dostosuj wilgotność, jeśli poza zakresem.</li>
+          <li>Obciążenie OLR nie powinno przekraczać ~3 kg VS/m³·d bez stopniowego dostosowania.</li>
+        </ul>
+      `;
+
+      // simple suggestion: if C/N < 22 suggest adding high-carbon substrate
+      const suggestions = [];
+      if(inputs.cn < 22) suggestions.push('Dodaj substrat o wysokiej zawartości węgla (np. słoma, kiszonka) by podnieść C/N.');
+      if(inputs.ph < 6.8) suggestions.push('pH poniżej 6.8 — rozważ dodanie alkalizującego dodatku (wapno, popiół) lub rozcieńczenie.');
+      if(inputs.olr > 3) suggestions.push('OLR wysokie — obniżaj stopniowo by uniknąć zakwaszenia.');
+      if(inputs.vs < 70) suggestions.push('Niska zawartość VS — dodaj substraty bardziej organiczne (odpady spożywcze).');
+
+      const sugHtml = suggestions.length ? `<div style="margin-top:8px"><strong>Propozycje krótkoterminowe:</strong><ul style="margin:6px 0 0 18px">${suggestions.map(s=>`<li>${s}</li>`).join('')}</ul></div>` : `<div class="hint">Brak krytycznych sugestii.</div>`;
+
+      recEl.appendChild(ul);
+      const stats = document.createElement('div'); stats.style.marginTop='8px';
+      stats.innerHTML = `<div style="font-weight:700;margin-bottom:6px">Sugestia mieszanki:</div><div>Obecny udział: <strong>${inputs.share}%</strong></div>`;
+      recEl.appendChild(stats);
+      recEl.innerHTML += sugHtml;
+    }
+
+    // event handlers
+    document.getElementById('runBtn').addEventListener('click', ()=>{
+      const inputs = {
+        type: document.getElementById('type').value,
+        share: +document.getElementById('share').value,
+        sm: +document.getElementById('sm').value,
+        vs: +document.getElementById('vs').value,
+        cn: +document.getElementById('cn').value,
+        ph: +document.getElementById('ph').value,
+        temp: +document.getElementById('temp').value,
+        olr: +document.getElementById('olr').value
+      };
+
+      const res = simplePredict(inputs);
+
+      document.getElementById('methaneVal').innerText = res.methanePercent + ' %';
+      document.getElementById('biogasVal').innerText = res.biogasM3 + ' m³/d';
+      document.getElementById('effVal').innerText = res.eff + ' m³/kgVS';
+
+      // update chart
+      const time = new Date().toLocaleTimeString('pl-PL');
+      trendChart.data.labels.push(time);
+      trendChart.data.datasets[0].data.push(res.methanePercent);
+      trendChart.data.datasets[1].data.push(res.biogasM3);
+      if(trendChart.data.labels.length>12){trendChart.data.labels.shift();trendChart.data.datasets[0].data.shift();trendChart.data.datasets[1].data.shift();}
+      trendChart.update();
+
+      // history and recommendations
+      addHistory({...res,...inputs,time:nowText()});
+      showRecommendations(inputs,res);
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', ()=>{document.getElementById('inputForm').reset(); document.getElementById('now').innerText = nowText();});
+
+    // CSV export
+    document.getElementById('exportCsv').addEventListener('click', ()=>{
+      const rows = [];
+      const items = historyEl.querySelectorAll('div');
+      if(items.length===0){alert('Brak danych w historii. Wykonaj symulację aby eksportować.'); return}
+      items.forEach(it=>{
+        // parse innerText crudely
+        const txt = it.innerText.replace(/\n/g,' | ');
+        rows.push([txt]);
+      });
+      const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e=>e.join(',')).join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a'); link.setAttribute('href', encodedUri); link.setAttribute('download', 'biogaz_history.csv'); document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    });
+
+    // Accessibility: allow Enter to run
+    document.getElementById('inputForm').addEventListener('submit', (e)=>{e.preventDefault(); document.getElementById('runBtn').click();});
+
+  </script>
 </body>
 </html>
