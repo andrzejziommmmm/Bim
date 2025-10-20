@@ -4,340 +4,109 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Biogaz AI — Optymalizacja substratu</title>
-  <meta name="description" content="Prosty, responsywny prototyp aplikacji AI dla biogazowni — optymalizacja składu substratu i symulacja produkcji metanu." />
-
-  <!-- Chart.js CDN -->
+  <meta name="description" content="Rozszerzony interfejs aplikacji AI dla biogazowni — optymalizacja składu substratu, analiza ekonomiczna i symulacje AI." />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
-  <!-- Modern, self-contained styles -->
   <style>
-    :root{
-      --bg:#0f1724; --card:#0b1220; --glass: rgba(255,255,255,0.04);
-      --accent: linear-gradient(135deg,#06b6d4 0%, #7c3aed 100%);
-      --muted: #9aa4b2; --glass-2: rgba(255,255,255,0.02);
-      --radius: 14px;
-      --glass-border: rgba(255,255,255,0.06);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; background: radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.12), transparent 6%),
-      radial-gradient(900px 400px at 90% 90%, rgba(6,182,212,0.08), transparent 6%), var(--bg);
-      color:#e6eef6; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-      padding:28px; display:flex; align-items:flex-start; justify-content:center;
-    }
-
-    /* container */
-    .wrap{width:1200px; max-width:100%; display:grid; gap:20px; grid-template-columns: 420px 1fr; align-items:start}
-
-    header{grid-column:1/-1; display:flex; gap:16px; align-items:center}
+    :root{--bg:#0f1724;--card:#0b1220;--glass:rgba(255,255,255,0.04);--accent:linear-gradient(135deg,#06b6d4 0%,#7c3aed 100%);--muted:#9aa4b2;--glass-border:rgba(255,255,255,0.06);--radius:14px;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial}
+    *{box-sizing:border-box}html,body{height:100%}body{margin:0;background:radial-gradient(1200px 600px at 10% 10%,rgba(124,58,237,0.12),transparent 6%),radial-gradient(900px 400px at 90% 90%,rgba(6,182,212,0.08),transparent 6%),var(--bg);color:#e6eef6;padding:28px;display:flex;justify-content:center;align-items:flex-start}
+    .wrap{width:1200px;max-width:100%;display:grid;gap:20px;grid-template-columns:420px 1fr}
+    header{grid-column:1/-1;display:flex;align-items:center;gap:16px}
     .logo{display:flex;align-items:center;gap:12px}
-    .logo .icon{width:48px;height:48px;border-radius:12px;background:var(--glass);display:grid;place-items:center;border:1px solid var(--glass-border);}
-    h1{font-size:18px;margin:0}
-    p.lead{margin:0;color:var(--muted)}
-
-    /* sidebar / controls */
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid var(--glass-border); padding:18px;border-radius:var(--radius);box-shadow: 0 6px 24px rgba(2,6,23,0.6)}
-
-    form .row{display:flex;gap:10px;margin-bottom:10px}
-    label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
-    input[type=number], select{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
-    .small{width:80px}
-
-    .controls-footer{display:flex;gap:10px;align-items:center;margin-top:14px}
-    button.primary{background:var(--accent);border:0;padding:12px 18px;border-radius:10px;color:#fff;font-weight:600;cursor:pointer}
-    button.ghost{background:transparent;border:1px solid var(--glass-border);padding:10px 14px;border-radius:10px;color:var(--muted);cursor:pointer}
-
-    /* main panel */
-    .main{display:flex;flex-direction:column;gap:18px}
-    .grid{display:grid;grid-template-columns:1fr 380px;gap:18px}
-    .metric{display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));border:1px solid var(--glass-border)}
-    .metric h3{margin:0;font-size:14px}
-    .metric .val{font-size:20px;font-weight:700}
-
-    canvas{background:transparent;border-radius:12px}
-
-    /* responsive */
-    @media (max-width:1024px){
-      .wrap{grid-template-columns:1fr}
-      .grid{grid-template-columns:1fr}
-    }
-    @media (max-width:600px){
-      body{padding:14px}
-      .logo .text{display:none}
-      .card{padding:12px}
-      input[type=number]{padding:8px}
-      button.primary{padding:10px}
-    }
-
-    /* micro interactions */
-    .fade-in{animation:fade .7s ease both}
-    @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-
-    .hint{font-size:12px;color:var(--muted);margin-top:8px}
-
-    footer{grid-column:1/-1;color:var(--muted);font-size:13px;margin-top:6px}
+    .icon{width:48px;height:48px;border-radius:12px;background:var(--glass);display:grid;place-items:center;border:1px solid var(--glass-border)}
+    h1{margin:0;font-size:18px}.lead{margin:0;color:var(--muted)}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid var(--glass-border);padding:18px;border-radius:var(--radius);box-shadow:0 6px 24px rgba(2,6,23,0.6)}
+    label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}input,select{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    .controls-footer{display:flex;gap:10px;margin-top:14px}button{cursor:pointer;border-radius:10px}button.primary{background:var(--accent);border:0;padding:12px 18px;color:#fff;font-weight:600}button.ghost{background:transparent;border:1px solid var(--glass-border);padding:10px 14px;color:var(--muted)}
+    .main{display:flex;flex-direction:column;gap:18px}.grid{display:grid;grid-template-columns:1fr 380px;gap:18px}
+    .metric{display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.015),rgba(255,255,255,0.01));border:1px solid var(--glass-border)}
+    canvas{border-radius:12px}
+    @media(max-width:1024px){.wrap{grid-template-columns:1fr}.grid{grid-template-columns:1fr}}
+    @media(max-width:600px){body{padding:14px}.card{padding:12px}button.primary{padding:10px}}
+    footer{grid-column:1/-1;color:var(--muted);font-size:13px;margin-top:8px;text-align:center}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="logo">
-        <div class="icon" aria-hidden>
-          <!-- simple biogas icon -->
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C10.34 5.5 7 7 7 10.5C7 13.5 9.5 16 12 16C14.5 16 17 13.5 17 10.5C17 7 13.66 5.5 12 2Z" stroke="#fff" stroke-opacity="0.9" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 20C4 16 8 13 12 13C16 13 20 16 20 20" stroke="#fff" stroke-opacity="0.6" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="text">
-          <h1>Biogaz AI</h1>
-          <p class="lead">Symulacja i optymalizacja substratu — prototyp 2025</p>
-        </div>
-      </div>
-    </header>
+<div class="wrap">
+<header>
+  <div class="logo">
+    <div class="icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C10.34 5.5 7 7 7 10.5C7 13.5 9.5 16 12 16C14.5 16 17 13.5 17 10.5C17 7 13.66 5.5 12 2Z" stroke="#fff" stroke-opacity="0.9" stroke-width="1.2"/><path d="M4 20C4 16 8 13 12 13C16 13 20 16 20 20" stroke="#fff" stroke-opacity="0.6" stroke-width="1.2"/></svg></div>
+    <div><h1>Biogaz AI</h1><p class="lead">Optymalizacja substratu, analiza ekonomiczna i symulacja AI</p></div>
+  </div>
+</header>
 
-    <!-- SIDEBAR: Inputs -->
-    <aside class="card fade-in">
-      <h2 style="margin-top:0">Parametry substratu</h2>
-      <form id="inputForm" autocomplete="off">
-        <div class="row">
-          <div style="flex:1">
-            <label for="type">Rodzaj</label>
-            <select id="type">
-              <option>Kiszonka kukurydzy</option>
-              <option>Obornik świński</option>
-              <option>Odpady spożywcze</option>
-              <option>Mieszanka</option>
-            </select>
-          </div>
-          <div>
-            <label for="share">Udział %</label>
-            <input id="share" type="number" value="50" min="0" max="100" class="small" />
-          </div>
-        </div>
+<aside class="card">
+  <h2>Parametry substratu</h2>
+  <form id="inputForm">
+    <label>Rodzaj substratu</label>
+    <select id="type"><option>Kiszonka kukurydzy</option><option>Obornik świński</option><option>Odpady spożywcze</option><option>Mieszanka</option></select>
+    <label>Udział (%)</label><input id="share" type="number" value="50" />
+    <label>Sucha masa SM (%)</label><input id="sm" type="number" value="25" />
+    <label>VS (%)</label><input id="vs" type="number" value="88" />
+    <label>C/N</label><input id="cn" type="number" value="24" />
+    <label>pH</label><input id="ph" type="number" value="7.0" />
+    <label>Temperatura (°C)</label><input id="temp" type="number" value="38" />
+    <label>OLR (kg VS/m³·d)</label><input id="olr" type="number" value="2.3" />
 
-        <label for="sm">Sucha masa (SM %)</label>
-        <input id="sm" type="number" value="25" step="0.1" />
+    <h3>Tryb zaawansowany</h3>
+    <label>Tryb pracy</label>
+    <select id="mode"><option value="mezofilny">Mezofilny (37°C)</option><option value="termofilny">Termofilny (55°C)</option></select>
+    <label>Cel optymalizacji</label>
+    <select id="goal"><option value="wydajnosc">Maksymalna wydajność</option><option value="koszt">Minimalny koszt</option></select>
 
-        <label for="vs">Lotne substancje stałe (VS % of TS)</label>
-        <input id="vs" type="number" value="88" step="0.1" />
+    <div class="controls-footer"><button type="button" id="runBtn" class="primary">Optymalizuj</button><button type="button" id="resetBtn" class="ghost">Reset</button></div>
+  </form>
+</aside>
 
-        <div class="row">
-          <div style="flex:1">
-            <label for="cn">Stosunek C/N</label>
-            <input id="cn" type="number" value="24" step="0.1" />
-          </div>
-          <div style="flex:1">
-            <label for="ph">pH</label>
-            <input id="ph" type="number" value="7.0" step="0.05" />
-          </div>
-        </div>
-
-        <label for="temp">Temperatura (°C)</label>
-        <input id="temp" type="number" value="38" step="0.1" />
-
-        <label for="olr">OLR (kg VS/m³·d)</label>
-        <input id="olr" type="number" value="2.3" step="0.01" />
-
-        <div class="controls-footer">
-          <button type="button" class="primary" id="runBtn">Optymalizuj</button>
-          <button type="button" class="ghost" id="resetBtn">Reset</button>
-        </div>
-        <p class="hint">To jest prototyp frontendu — model AI symulowany po stronie klienta. Do produkcyjnej wersji podłącz model ML po stronie serwera.</p>
-      </form>
-
-      <hr style="border:none;border-top:1px solid var(--glass-border);margin:12px 0"/>
-      <div>
-        <h3 style="margin:0 0 8px 0">Eksport</h3>
-        <button class="ghost" id="exportCsv">Eksportuj CSV</button>
-      </div>
-    </aside>
-
-    <!-- MAIN CONTENT -->
-    <main class="main">
-      <div class="grid">
-        <div class="card fade-in">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-            <div>
-              <h2 style="margin:0">Wynik symulacji</h2>
-              <p class="lead" style="margin:0">Szacowana produkcja metanu i rekomendacje optymalizacyjne</p>
-            </div>
-            <div style="text-align:right">
-              <div style="font-size:12px;color:var(--muted)">Data</div>
-              <div id="now" style="font-weight:700">--</div>
-            </div>
-          </div>
-
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
-            <div class="metric"><div><h3>Metan (CH₄)</h3><div class="muted">zawartość</div></div><div class="val" id="methaneVal">- %</div></div>
-            <div class="metric"><div><h3>Biogaz</h3><div class="muted">m³/d</div></div><div class="val" id="biogasVal">-</div></div>
-            <div class="metric"><div><h3>Wydajność</h3><div class="muted">m³ CH₄ / kg VS</div></div><div class="val" id="effVal">-</div></div>
-          </div>
-
-          <canvas id="trendChart" height="160"></canvas>
-        </div>
-
-        <div class="card fade-in">
-          <h3 style="margin-top:0">Rekomendacje</h3>
-          <div id="recommendations">
-            <p class="hint">Naciśnij <strong>Optymalizuj</strong>, aby zobaczyć sugestie mieszanki.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="card fade-in">
-        <h3 style="margin-top:0">Historia symulacji</h3>
-        <div id="history" style="display:flex;flex-direction:column;gap:8px;max-height:160px;overflow:auto;padding-top:6px"></div>
-      </div>
-
-      <footer>
-        Prototyp interfejsu — gotowy do umieszczenia jako **index.html** w repozytorium GitHub Pages. <strong>Nie</strong> zawiera prawdziwego modelu ML (użyj serwera do trenowania i wywoływania modelu).
-      </footer>
-    </main>
-
+<main class="main">
+  <div class="grid">
+    <div class="card">
+      <h2>Wynik symulacji</h2>
+      <div class="metric"><div>Metan (CH₄)</div><div id="methaneVal">- %</div></div>
+      <div class="metric"><div>Biogaz (m³/d)</div><div id="biogasVal">-</div></div>
+      <div class="metric"><div>Wydajność (m³/kg VS)</div><div id="effVal">-</div></div>
+      <canvas id="trendChart" height="150"></canvas>
+    </div>
+    <div class="card">
+      <h3>Rekomendacje</h3>
+      <div id="recommendations"><p>Wyniki pojawią się po symulacji.</p></div>
+    </div>
   </div>
 
-  <!-- JavaScript: symulacja modelu i interakcje -->
-  <script>
-    // Utility: format date
-    function nowText(){return new Date().toLocaleString('pl-PL', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}
-    document.getElementById('now').innerText = nowText();
+  <div class="card"><h3>Analiza ekonomiczna</h3>
+    <p>Wprowadź cenę energii i koszty substratu, by zobaczyć prognozę przychodów.</p>
+    <label>Cena energii (PLN/kWh)</label><input id="energyPrice" type="number" value="0.65" step="0.01" />
+    <label>Koszt substratu (PLN/t)</label><input id="substrateCost" type="number" value="120" />
+    <button id="calcProfit" class="primary">Oblicz przychód</button>
+    <div id="profitResult" style="margin-top:10px;color:var(--muted)">—</div>
+  </div>
 
-    const historyEl = document.getElementById('history');
-    const recEl = document.getElementById('recommendations');
+  <div class="card"><h3>Symulacja AI (suwaki)</h3>
+    <label>Udział substratu (%)</label>
+    <input id="sliderShare" type="range" min="0" max="100" value="50" />
+    <label>OLR</label>
+    <input id="sliderOlr" type="range" min="1" max="5" value="2.3" step="0.1" />
+    <p id="sliderInfo">Symuluj zmiany proporcji, aby zobaczyć natychmiastowy efekt.</p>
+  </div>
 
-    // Chart setup
-    const ctx = document.getElementById('trendChart').getContext('2d');
-    const trendChart = new Chart(ctx, {
-      type:'line', data:{labels:[],datasets:[{label:'CH₄ %',data:[],tension:0.3,fill:false,pointRadius:4} ,{label:'Biogaz m³/d',data:[],tension:0.3,fill:false,pointRadius:2}]}, options:{plugins:{legend:{labels:{color:'#cfe9ff'}}},scales:{x:{grid:{display:false},ticks:{color:'#9fb7d0'}},y:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'#9fb7d0'}}}}
-    });
+  <div class="card"><h3>Pomoc i informacje</h3>
+    <p>Aplikacja Biogaz AI umożliwia symulację wydajności i optymalizację substratów. Dane wejściowe można zmieniać, a model heurystyczny oceni wpływ na produkcję metanu. W wersji produkcyjnej będzie można połączyć z prawdziwym modelem uczenia maszynowego.</p>
+  </div>
 
-    // Simple client-side 'model' to simulate prediction
-    function simplePredict(inputs){
-      // inputs: {sm,vs,cn,ph,temp,olr,share,type}
-      // This is a heuristic simulation, NOT an ML model.
+  <footer>© 2025 Biogaz AI — wersja demonstracyjna</footer>
+</main>
+</div>
+<script>
+  const ctx=document.getElementById('trendChart').getContext('2d');
+  const chart=new Chart(ctx,{type:'line',data:{labels:[],datasets:[{label:'CH₄ %',data:[],borderColor:'#06b6d4',fill:false},{label:'Biogaz m³/d',data:[],borderColor:'#7c3aed',fill:false}]},options:{plugins:{legend:{labels:{color:'#cfe9ff'}}},scales:{x:{ticks:{color:'#9fb7d0'}},y:{ticks:{color:'#9fb7d0'}}}}});
 
-      // base CH4 potential depends on substrate type
-      const baseMap = {"Kiszonka kukurydzy":0.55, "Obornik świński":0.6, "Odpady spożywcze":0.65, "Mieszanka":0.58};
-      const base = baseMap[inputs.type] || 0.55;
+  function predict(inputs){const base={"Kiszonka kukurydzy":0.55,"Obornik świński":0.6,"Odpady spożywcze":0.65,"Mieszanka":0.58}[inputs.type]||0.55;const f=Math.min(1.25,inputs.vs/80)* (1-Math.abs(inputs.sm-25)/60)*(1-Math.abs(inputs.cn-25)/50)*(1-Math.abs(inputs.ph-7.1)/2)*(1-Math.abs(inputs.temp-38)/30)*(1-Math.max(0,(inputs.olr-3)/6));const m=Math.max(0.4,base*f);const b=(inputs.vs*inputs.share/100)*(inputs.sm/100)*1000*(1-Math.max(0,(inputs.olr-3)/6));return{methanePercent:+(m*100).toFixed(1),biogasM3:Math.round(b),eff:+(m*0.8).toFixed(3)}}
 
-      // adjust by VS and SM
-      const vsFactor = Math.min(1.25, inputs.vs/80 * 1.0);
-      const moistureFactor = 1 - Math.abs(inputs.sm - 25)/60; // best near 25%
+  document.getElementById('runBtn').onclick=()=>{const i={type:type.value,share:+share.value,sm:+sm.value,vs:+vs.value,cn:+cn.value,ph:+ph.value,temp:+temp.value,olr:+olr.value};const r=predict(i);methaneVal.innerText=r.methanePercent+' %';biogasVal.innerText=r.biogasM3;effVal.innerText=r.eff;chart.data.labels.push(new Date().toLocaleTimeString());chart.data.datasets[0].data.push(r.methanePercent);chart.data.datasets[1].data.push(r.biogasM3);chart.update();recommendations.innerHTML='<ul><li>Utrzymuj pH 6.8–7.5.</li><li>Dostosuj C/N do ok. 25.</li><li>OLR nie powyżej 3.</li></ul>';}
 
-      // C/N ideal near 25
-      const cnFactor = 1 - Math.min(0.4, Math.abs(inputs.cn - 25)/50);
+  document.getElementById('calcProfit').onclick=()=>{const price=+energyPrice.value;const cost=+substrateCost.value;const gas=+biogasVal.innerText||0;const kWh=gas*6.0;const income=(kWh*price)-(cost/100);profitResult.innerHTML=`Szacowany przychód: <strong>${income.toFixed(2)} PLN/dzień</strong>`;}
 
-      // pH optimal 6.8-7.5
-      const phFactor = 1 - Math.min(0.5, Math.abs(inputs.ph - 7.1)/2);
-
-      // temperature factor (mezofilny 37-40 ideal)
-      const tempFactor = 1 - Math.min(0.5, Math.abs(inputs.temp - 38)/30);
-
-      // OLR too high reduces yield
-      const olrFactor = 1 - Math.max(0, (inputs.olr - 3)/6);
-
-      const methaneFraction = Math.max(0.40, base * vsFactor * moistureFactor * cnFactor * phFactor * tempFactor * olrFactor);
-
-      // biogas production — rough: proportional to VS, share and an arbitrary coef
-      const biogas = Math.max(100, (inputs.vs * inputs.share/100) * (inputs.sm/100) * 1000 * olrFactor);
-
-      const ch4_m3_per_kgVS = methaneFraction * 0.8; // synthetic
-
-      return {
-        methanePercent: +(methaneFraction*100).toFixed(1),
-        biogasM3: Math.round(biogas),
-        eff: +(ch4_m3_per_kgVS.toFixed(3))
-      }
-    }
-
-    function addHistory(entry){
-      const el = document.createElement('div');
-      el.style.padding='8px'; el.style.borderRadius='8px'; el.style.background='var(--glass-2)'; el.style.border='1px solid var(--glass-border)';
-      el.innerHTML = `<strong>${entry.type} (${entry.share}%)</strong> — CH₄: ${entry.methanePercent}% • Biogaz: ${entry.biogasM3} m³/d • Wydajność: ${entry.eff} m³/kgVS <div style="font-size:12px;color:var(--muted)">${entry.time}</div>`;
-      historyEl.prepend(el);
-    }
-
-    function showRecommendations(inputs, result){
-      recEl.innerHTML = '';
-      const ul = document.createElement('div');
-      ul.innerHTML = `
-        <p style="margin:6px 0">Zalecenia optymalizacyjne (heurystyka):</p>
-        <ul style="margin:0 0 8px 18px">
-          <li>Utrzymuj pH w zakresie 6.8–7.5 dla stabilnej produkcji.</li>
-          <li>Zmieniaj stosunek C/N w kierunku 25 — rozważ dodanie substratu wysokowęglowego, jeśli &lt;20.</li>
-          <li>Optymalna sucha masa ~20–30% — dostosuj wilgotność, jeśli poza zakresem.</li>
-          <li>Obciążenie OLR nie powinno przekraczać ~3 kg VS/m³·d bez stopniowego dostosowania.</li>
-        </ul>
-      `;
-
-      // simple suggestion: if C/N < 22 suggest adding high-carbon substrate
-      const suggestions = [];
-      if(inputs.cn < 22) suggestions.push('Dodaj substrat o wysokiej zawartości węgla (np. słoma, kiszonka) by podnieść C/N.');
-      if(inputs.ph < 6.8) suggestions.push('pH poniżej 6.8 — rozważ dodanie alkalizującego dodatku (wapno, popiół) lub rozcieńczenie.');
-      if(inputs.olr > 3) suggestions.push('OLR wysokie — obniżaj stopniowo by uniknąć zakwaszenia.');
-      if(inputs.vs < 70) suggestions.push('Niska zawartość VS — dodaj substraty bardziej organiczne (odpady spożywcze).');
-
-      const sugHtml = suggestions.length ? `<div style="margin-top:8px"><strong>Propozycje krótkoterminowe:</strong><ul style="margin:6px 0 0 18px">${suggestions.map(s=>`<li>${s}</li>`).join('')}</ul></div>` : `<div class="hint">Brak krytycznych sugestii.</div>`;
-
-      recEl.appendChild(ul);
-      const stats = document.createElement('div'); stats.style.marginTop='8px';
-      stats.innerHTML = `<div style="font-weight:700;margin-bottom:6px">Sugestia mieszanki:</div><div>Obecny udział: <strong>${inputs.share}%</strong></div>`;
-      recEl.appendChild(stats);
-      recEl.innerHTML += sugHtml;
-    }
-
-    // event handlers
-    document.getElementById('runBtn').addEventListener('click', ()=>{
-      const inputs = {
-        type: document.getElementById('type').value,
-        share: +document.getElementById('share').value,
-        sm: +document.getElementById('sm').value,
-        vs: +document.getElementById('vs').value,
-        cn: +document.getElementById('cn').value,
-        ph: +document.getElementById('ph').value,
-        temp: +document.getElementById('temp').value,
-        olr: +document.getElementById('olr').value
-      };
-
-      const res = simplePredict(inputs);
-
-      document.getElementById('methaneVal').innerText = res.methanePercent + ' %';
-      document.getElementById('biogasVal').innerText = res.biogasM3 + ' m³/d';
-      document.getElementById('effVal').innerText = res.eff + ' m³/kgVS';
-
-      // update chart
-      const time = new Date().toLocaleTimeString('pl-PL');
-      trendChart.data.labels.push(time);
-      trendChart.data.datasets[0].data.push(res.methanePercent);
-      trendChart.data.datasets[1].data.push(res.biogasM3);
-      if(trendChart.data.labels.length>12){trendChart.data.labels.shift();trendChart.data.datasets[0].data.shift();trendChart.data.datasets[1].data.shift();}
-      trendChart.update();
-
-      // history and recommendations
-      addHistory({...res,...inputs,time:nowText()});
-      showRecommendations(inputs,res);
-    });
-
-    document.getElementById('resetBtn').addEventListener('click', ()=>{document.getElementById('inputForm').reset(); document.getElementById('now').innerText = nowText();});
-
-    // CSV export
-    document.getElementById('exportCsv').addEventListener('click', ()=>{
-      const rows = [];
-      const items = historyEl.querySelectorAll('div');
-      if(items.length===0){alert('Brak danych w historii. Wykonaj symulację aby eksportować.'); return}
-      items.forEach(it=>{
-        // parse innerText crudely
-        const txt = it.innerText.replace(/\n/g,' | ');
-        rows.push([txt]);
-      });
-      const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e=>e.join(',')).join('\n');
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement('a'); link.setAttribute('href', encodedUri); link.setAttribute('download', 'biogaz_history.csv'); document.body.appendChild(link); link.click(); document.body.removeChild(link);
-    });
-
-    // Accessibility: allow Enter to run
-    document.getElementById('inputForm').addEventListener('submit', (e)=>{e.preventDefault(); document.getElementById('runBtn').click();});
-
-  </script>
+  document.getElementById('sliderShare').oninput=()=>{share.value=sliderShare.value;sliderInfo.innerText='Udział: '+sliderShare.value+'%';}
+  document.getElementById('sliderOlr').oninput=()=>{olr.value=sliderOlr.value;sliderInfo.innerText+=' | OLR: '+sliderOlr.value;}
+</script>
 </body>
 </html>
